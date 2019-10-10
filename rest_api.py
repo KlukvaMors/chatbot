@@ -1,6 +1,6 @@
 import hug
 import uuid
-from db import Token, Message
+from db import Token, Message, Score
 import peewee
 import fake_chatbot as chatbot
 
@@ -37,3 +37,17 @@ def send_message(hug_token, message: hug.types.text):
 def receive_message(hug_token, after_msg_id: hug.types.number):
     token = Token.get(Token.token == hug_token)
     return Message.select().where(Message.token == token, Message.reply_to != None, Message.id > after_msg_id).dicts()
+
+
+@hug.post(requires=token_authentication)
+def score_message(hug_token, message_id: hug.types.number, score: hug.types.number):
+    try:
+        msg = Message.get(Message.token == Token.get(Token.token == hug_token),
+                          Message.id == message_id,
+                          Message.reply_to != None)
+        Score.create(message=msg, value=score)
+        return {"status": "ok"}
+    except peewee.DoesNotExist:
+        return {"error": "Wrong message_id"}
+    except peewee.IntegrityError:
+        return {"error": "Score has already set"}

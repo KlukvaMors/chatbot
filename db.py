@@ -21,3 +21,9 @@ class Message(BaseModel):
     created = DateTimeField(default=datetime.now)
     token = ForeignKeyField(model=Token, null=False)
     reply_to = ForeignKeyField(model='self', null=True)
+
+
+class Score(BaseModel):
+    value = SmallIntegerField(null=False)
+    message = ForeignKeyField(model=Message, null=False, unique=True)
+    created = DateTimeField(default=datetime.now)
