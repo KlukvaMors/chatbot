@@ -19,6 +19,5 @@ class Token(BaseModel):
 class Message(BaseModel):
     content = TextField(null=False)
     created = DateTimeField(default=datetime.now)
-    from_me = BooleanField(default=False)
     token = ForeignKeyField(model=Token, null=False)
     reply_to = ForeignKeyField(model='self', null=True)
