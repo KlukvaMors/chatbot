@@ -1,2 +1,2 @@
-from deeppavlov import build_model
-
+#import deeppavlov
+#TODO it
