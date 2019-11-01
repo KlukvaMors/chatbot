@@ -30,7 +30,7 @@ class Token(BaseModel):
 
 
 class User(BaseModel):
-    login = CharField(max_length=256, null=False)
+    login = CharField(max_length=256, null=False, unique=True)
     password = CharField(null=False)
     token = ForeignKeyField(Token, null=False, unique=True)
 

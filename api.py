@@ -3,7 +3,8 @@ import uuid
 from db import Token, Message, Score, User
 import peewee
 import fake_chatbot as chatbot
-from falcon import HTTP_404, HTTP_409, HTTPError
+from falcon import HTTP_404, HTTP_409, HTTP_422, HTTPError
+import hashlib
 
 
 @hug.directive()
@@ -24,22 +25,33 @@ def token_authentication(token):
 def get_new_token():
     token = uuid.uuid4().hex
     Token.create(token=token)
-    return token
+    return {'token': token}
 
 
 @hug.post()
 def registration(login: hug.types.text, password: hug.types.text):
+
+    if len(password) >= 6:
+        password = hashlib.sha1(password.encode()).hexdigest()
+    else:
+        raise HTTPError(HTTP_422)
+
     token = uuid.uuid4().hex
     token = Token.create(token=token)
-    User.create(**locals())
+    try:
+        User.create(**locals())
+    except peewee.IntegrityError:
+        token.delete()
+        raise HTTPError(HTTP_409)
     return {'status': 'ok'}
 
 
 @hug.get()
 def get_token(login: hug.types.text, password: hug.types.text):
     try:
-        user = User.get(**locals())
-        return user.token.token
+        user = User.get(login=login,
+                        password=hashlib.sha1(password.encode()).hexdigest())
+        return {'token': user.token.token}
     except User.DoesNotExist:
         raise HTTPError(HTTP_404)
 
