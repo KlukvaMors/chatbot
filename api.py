@@ -59,7 +59,8 @@ def get_token(login: hug.types.text, password: hug.types.text):
 @hug.post(requires=token_authentication)
 def send_message(hug_token, message: hug.types.text):
     msg = Message.create(content=message, token=Token.get(Token.token == hug_token))
-    return chatbot.process_question(msg)
+    rpl_msg = chatbot.process_question(msg)
+    return {"content": rpl_msg.content, "created": rpl_msg.created}
 
 
 @hug.get(requires=token_authentication)
