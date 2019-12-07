@@ -4,6 +4,7 @@ from db import Token, Message, Score, User
 import peewee
 import fake_chatbot as chatbot
 from falcon import HTTP_404, HTTP_409, HTTP_422, HTTPError
+from playhouse.shortcuts import model_to_dict
 import hashlib
 
 
@@ -59,8 +60,7 @@ def get_token(login: hug.types.text, password: hug.types.text):
 @hug.post(requires=token_authentication)
 def send_message(hug_token, message: hug.types.text):
     msg = Message.create(content=message, token=Token.get(Token.token == hug_token))
-    rpl_msg = chatbot.process_question(msg)
-    return {"content": rpl_msg.content, "created": rpl_msg.created}
+    return model_to_dict(chatbot.process_question(msg))
 
 
 @hug.get(requires=token_authentication)
